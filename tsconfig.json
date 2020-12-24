@@ -1,0 +1,15 @@
+{
+  "extends": "@tsconfig/node12/tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "es5",
+    "module": "es2015",
+    "moduleResolution": "Node"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
