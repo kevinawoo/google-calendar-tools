@@ -14,20 +14,8 @@ This repo contains a series of calendar tools that have helped manage my calenda
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-<!-- ./gh-md-toc --insert README.md -->
-<!--ts-->
-   * [Calendar Tools](#calendar-tools)
-      * [createEndingSoonEvents](#createendingsoonevents)
-      * [blockWorkCalWithPersonEventPlaceholders](#blockworkcalwithpersoneventplaceholders)
-      * [createWalkEvent](#createwalkevent)
-      * [cleanup](#cleanup)
-   * [Setup](#setup)
 
-<!-- Added by: kevinwoo, at: Wed Dec 23 23:29:39 PST 2020 -->
-
-<!--te-->
-
-
+# Tools/Methods
 
 ## createEndingSoonEvents
 This is useful to get a notification that a calendar event is ending soon.
