@@ -6,6 +6,7 @@ This repo contains a series of calendar tools that have helped manage my calenda
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Tools/Methods](#toolsmethods)
   - [createEndingSoonEvents](#createendingsoonevents)
   - [blockWorkCalWithPersonEventPlaceholders](#blockworkcalwithpersoneventplaceholders)
   - [createWalkEvent](#createwalkevent)
