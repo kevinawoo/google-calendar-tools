@@ -67,7 +67,7 @@ Is a helper script to remove all events on a calendar. Use with caution!
 It's useful to blast away the events created by the `createEndingSoonEvents` or `createWalkEvent`
 
 
-# Setup
+# Setup and Deploy
 
 1. Create a file `src/config.ts` that contains
     ```ts
