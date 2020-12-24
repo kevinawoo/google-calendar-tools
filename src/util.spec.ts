@@ -62,9 +62,14 @@ describe('util', () => {
     });
 
     it('adds -1 hours', () => {
-      const now = new Date();
+      const now = new Date(Date.parse('09 Nov 2020 10:01:22 PST'));
       const expected = (now.getHours() - 1) % 24;
-      expect(addHours(now, -1).getHours()).toBe(expected);
+      expect(addHours(now, -1).getHours()).toBe(9);
+    });
+
+    it('adds -1 hours during midnight', () => {
+      const now = new Date(Date.parse('09 Nov 2020 00:01:22 PST'));
+      expect(addHours(now, -1).getHours()).toBe(23);
     });
   });
 
