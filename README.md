@@ -11,7 +11,7 @@ This repo contains a series of calendar tools that have helped manage my calenda
   - [blockWorkCalWithPersonEventPlaceholders](#blockworkcalwithpersoneventplaceholders)
   - [createWalkEvent](#createwalkevent)
   - [cleanup](#cleanup)
-- [Setup](#setup)
+- [Setup and Deploy](#setup-and-deploy)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
