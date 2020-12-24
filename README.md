@@ -1,6 +1,10 @@
 # Google Calendar Tools
 This repo contains a series of calendar tools that have helped manage my calendar.
 
+
+<!-- START doctoc -->
+<!-- END doctoc -->
+
 <!-- ./gh-md-toc --insert README.md -->
 <!--ts-->
    * [Calendar Tools](#calendar-tools)
