@@ -69,7 +69,7 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
 
 # Setup and Deploy
 
-1. Create a file `src/config.ts` that contains
+1. Create a file `./config.ts` that contains
     ```ts
     export const Config = {
       BlockWorkCalWithPersonEventPlaceholders: {
