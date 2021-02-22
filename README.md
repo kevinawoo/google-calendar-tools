@@ -84,8 +84,8 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
       },
       SunsetWalkEvents: {
         DaysToCreate: 14,
-        Longitude: 0.00, // your longitude
-        Latitude: 0.00 // your latitude
+        Latitude: 0.00, // your latitude
+        Longitude: 0.00 // your longitude
       }
     };
     ```
