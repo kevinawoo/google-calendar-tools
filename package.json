@@ -7,7 +7,7 @@
     "lint": "eslint --fix src/**/*.ts",
     "test": "jest",
     "build": "npm run lint && npm run test && rimraf dist && webpack && cpx src/appsscript.json dist && cpx \"src/**/*.html\" dist",
-    "push": "npm run build && clasp push"
+    "build-push": "npm run build && clasp push"
   },
   "repository": {
     "type": "git",
@@ -60,6 +60,7 @@
     ]
   },
   "dependencies": {
+    "@google/clasp": "^2.4.0",
     "moment": "^2.27.0",
     "sunrise-sunset-js": "^2.1.2"
   }

@@ -31,6 +31,10 @@ export class CalendarService {
   }
 
   static createEndingSoonEvents(): void {
+    if (!Config.EndingSoonEvents.Enabled) {
+      return;
+    }
+
     const today = new Date();
     const endDate = new Date();
     endDate.setDate(today.getDate() + Config.EndingSoonEvents.LookAheadDays); // how many days in advance to monitor and block off time
@@ -141,7 +145,7 @@ export class CalendarService {
   }
 
   static hasDeclined(event: GoogleAppsScript.Calendar.CalendarEvent): boolean {
-    Logger.log(`checking for declined: ${event.getTitle()}: ${event.getMyStatus()}`);
+    Logger.log(`checking for my status on ${event.getTitle()}: ${event.getMyStatus()}`);
 
     let declined = false;
 
@@ -165,10 +169,20 @@ export class CalendarService {
       }
     }
 
+    const containsCancelled = event.getTitle().match(/\[cancelled]/);
+    if (containsCancelled) {
+      Logger.log(`${event.getTitle()} has [cancelled] in title`);
+      declined = true;
+    }
+
     return declined;
   }
 
   static createWalkEvent(): void {
+    if (!Config.SunsetWalkEvents.Enabled) {
+      return;
+    }
+
     this.cleanup(Config.EndingSoonEvents.PrimaryCalID, /Sunset Walk. Sunset.*/);
 
     const cal = CalendarApp.getCalendarById(Config.EndingSoonEvents.PrimaryCalID);
@@ -188,6 +202,10 @@ export class CalendarService {
   }
 
   static blockWorkCalWithPersonEventPlaceholders(): void {
+    if (!Config.BlockWorkCalWithPersonEventPlaceholders.Enabled) {
+      return;
+    }
+
     const workEventPlaceholderTitle = Config.BlockWorkCalWithPersonEventPlaceholders.WorkEventPlaceholderTitle || 'Busy'; // update this to the text you'd like to appear in the new events created in primary calendar
 
     const today = new Date();
@@ -236,6 +254,11 @@ export class CalendarService {
             matched = true;
             break;
           }
+        }
+
+        if (this.hasDeclined(personalEvent)) {
+          Logger.log(`ignoring event for "${personalEvent.getTitle()}", it's cancelled.`);
+          continue;
         }
 
         if (matched) {

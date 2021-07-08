@@ -73,26 +73,24 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
     ```ts
     export const Config = {
       BlockWorkCalWithPersonEventPlaceholders: {
+        Enabled: true,
         WorkCalID: 'workEmail@work.com',
         PersonalCalID: 'personalEmail@gmail.com',
         WorkEventPlaceholderTitle: 'Busy'
       },
       EndingSoonEvents: {
-        PrimaryCalID: 'workEmail@work.com', // id of the primary calendar to pull events from
+        Enabled: true,
+        PrimaryCalID: 'personalEmail@gmail.com', // id of the primary calendar to pull events from
         EndNotifCalID: 'domain_CalID@group.calendar.google.com', // id of the secondary calendar to push to
         LookAheadDays: 1 // days to look ahead and create events for
       },
       SunsetWalkEvents: {
+        Enabled: true,
         DaysToCreate: 14,
         Latitude: 0.00, // your latitude
         Longitude: 0.00 // your longitude
       }
     };
-    ```
-
-1. Install the packages
-    ```bash
-    yarn
     ```
 
 1. Setup a Google App Script
@@ -106,13 +104,19 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
         "rootDir": "dist"
       }
       ```
+
+1. Install the packages
+    ```bash
+    npm i
+    ```
   
 1. Push it to Google Scripts
     ```bash
-    yarn build && clasp push -f
+    clasp login
+    npm run build-push
     ```
 
 1. Setup a project trigger
-    I setup a time based trigger on the 
+    1. setup a time based trigger on the 
     - `sync` function: every `30 minutes`
     - `createWalkEvent` function: `weekly every Monday 9-10am`
