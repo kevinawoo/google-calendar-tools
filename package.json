@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@google/clasp": "^2.4.0",
-    "moment": "^2.27.0",
+    "moment": "^2.29.4",
     "sunrise-sunset-js": "^2.1.2"
   }
 }
