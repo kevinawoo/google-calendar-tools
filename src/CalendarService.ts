@@ -13,6 +13,11 @@ type ISycnedEvents = Record<string, CalendarEvent[]>;
 
 export class CalendarService {
   static cleanup(calID = Config.EndingSoonEvents.EndNotifCalID, titleMatcher = /Ending Soon/): void {
+    if (!calID) {
+      Logger.log('No calendar ID provided for title: ' + titleMatcher);
+      return;
+    }
+
     const primaryCal = CalendarApp.getCalendarById(calID);
 
     const today = new Date();
@@ -273,17 +278,24 @@ export class CalendarService {
 
       // if the secondary event does not exist in the primary calendar, create it, skipping weekends
       const day = personalEvent.getStartTime().getDay();
-      if (day === 1 || day === 2 || day === 3 || day === 4 || day === 5) {
-        const newEvent = workCal.createEvent(workEventPlaceholderTitle, personalEvent.getStartTime(), personalEvent.getEndTime());
+      const timeHour = personalEvent.getStartTime().getHours();
 
-        const desc: TargetDescription = { baseEventId: personalEventId };
-        newEvent.setDescription(JSON.stringify(desc));
-
-        newEvent.setVisibility(CalendarApp.Visibility.PRIVATE); // set blocked time as private appointments in work calendar
-        newEvent.removeAllReminders(); // so you don't get double notifications. Delete this if you want to keep the default reminders for your newly created primary calendar events
-
-        Logger.log(`created new blocking event for "${personalEvent.getTitle()}": ${newEvent.getId()} ${newEvent.getTitle()} @ ${newEvent.getStartTime()} - ${newEvent.getEndTime()}`);
+      if (day === 6 || day === 0) {
+        // skip weekends
+        Logger.log(`skipping event for "${personalEvent.getTitle()}", it's on a weekend. Day: ${day}`);
+        continue;
+      } else if (timeHour < Config.BlockWorkCalWithPersonEventPlaceholders.WorkDayStartHour || timeHour >= Config.BlockWorkCalWithPersonEventPlaceholders.WorkDayEndHour) {
+        // skip events outside of work hours
+        Logger.log(`skipping event for "${personalEvent.getTitle()}", it's outside of work hours. Hour: ${timeHour}`);
+        continue;
       }
+
+      const newEvent = workCal.createEvent(workEventPlaceholderTitle, personalEvent.getStartTime(), personalEvent.getEndTime());
+      const desc: TargetDescription = { baseEventId: personalEventId };
+      newEvent.setDescription(JSON.stringify(desc));
+      newEvent.setVisibility(CalendarApp.Visibility.PRIVATE);
+      newEvent.removeAllReminders();
+      Logger.log(`created new blocking event for "${personalEvent.getTitle()}": ${newEvent.getId()} ${newEvent.getTitle()} @ ${newEvent.getStartTime()} - ${newEvent.getEndTime()}`);
     }
 
     // if a primary event previously created no longer exists in the secondary calendar, delete it

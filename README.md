@@ -76,7 +76,9 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
         Enabled: true,
         WorkCalID: 'workEmail@work.com',
         PersonalCalID: 'personalEmail@gmail.com',
-        WorkEventPlaceholderTitle: 'Busy'
+        WorkEventPlaceholderTitle: 'Busy',
+        WorkDayStartHour: 8,
+        WorkDayEndHour: 19
       },
       EndingSoonEvents: {
         Enabled: true,
@@ -87,8 +89,8 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
       SunsetWalkEvents: {
         Enabled: true,
         DaysToCreate: 14,
-        Latitude: 0.00, // your latitude
-        Longitude: 0.00 // your longitude
+        Latitude: 0.0, // your latitude
+        Longitude: 0.0 // your longitude
       }
     };
     ```
