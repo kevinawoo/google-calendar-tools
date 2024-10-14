@@ -69,7 +69,7 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
 
 # Setup and Deploy
 
-1. Create a file `./config.ts` that contains
+1. Create a file `config.ts` that contains
     ```ts
     export const Config = {
       BlockWorkCalWithPersonEventPlaceholders: {
@@ -93,7 +93,7 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
     };
     ```
 
-1. Setup a Google App Script
+2. Setup a Google App Script
     - Go to https://script.google.com/ and create a new `Project`.
     - From the URL, grab the id, it'll look something like `https://script.google.com/home/projects/{YOUR_SCRIPT_ID_IS_HERE}/edit`.
       - Another way to get it is to go to the `⚙️ Project Settings` page and you can find your Script ID.
@@ -105,18 +105,21 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
       }
       ```
 
-1. Install the packages
+3. Install the packages
     ```bash
     npm i
+    npm install -g clasp
     ```
   
-1. Push it to Google Scripts
+4. Push it to Google Scripts
     ```bash
     clasp login
     npm run build-push
     ```
+   If you run into problems with permissions with `clasp login` because of org policies,
+   you can copy the `dist/bundle.js` directly into the Google App Script editor.
 
-1. Setup a project trigger
+5. Setup a project trigger
     1. setup a time based trigger on the 
     - `sync` function: every `30 minutes`
     - `createWalkEvent` function: `weekly every Monday 9-10am`

@@ -57,7 +57,7 @@ export class CalendarService {
       let descJson: TargetDescription;
       try {
         descJson = JSON.parse(targetEvent.getDescription());
-      } catch (e) {
+      } catch {
         continue;
       }
 
@@ -100,11 +100,11 @@ export class CalendarService {
         }
 
         // delete all other targetEvents (in case we have multiples) [0] is the most accurate one
-        matchingTargetEvents.forEach(event => {
+        matchingTargetEvents.forEach((event) => {
           Logger.log(`removing ${event.getTitle()} from calendar`);
           try {
             event.deleteEvent();
-          } catch (err) {
+          } catch {
             // pass
           }
         });
@@ -128,15 +128,15 @@ export class CalendarService {
     // let's remove any events that haven't been updated
     const keys = Object.keys(syncedEvents);
     Logger.log(`cleaning up ${keys} old entries`);
-    keys.forEach(eventId => {
+    keys.forEach((eventId) => {
       const events = syncedEvents[eventId];
       Logger.log(`eventId: ${eventId}: ${events}`);
       if (events && events.length) {
-        events.forEach(event => {
+        events.forEach((event) => {
           Logger.log(`removing ${event.getTitle()}`);
           try {
             event.deleteEvent();
-          } catch (err) {
+          } catch {
             // pass
           }
         });
@@ -229,7 +229,7 @@ export class CalendarService {
           const personalDesc: TargetDescription = JSON.parse(event.getDescription());
           syncedWorkEventsByPersonalEventId[personalDesc.baseEventId] = syncedWorkEventsByPersonalEventId[personalDesc.baseEventId] || []; // make sure the array is created
           syncedWorkEventsByPersonalEventId[personalDesc.baseEventId].push(event);
-        } catch (e) {
+        } catch {
           // ignored, prob not actually an event created by us
         }
       }

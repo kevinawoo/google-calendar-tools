@@ -63,7 +63,7 @@ describe('util', () => {
 
     it('adds -1 hours', () => {
       const now = new Date(Date.parse('09 Nov 2020 10:01:22 PST'));
-      const expected = (now.getHours() - 1) % 24;
+      // const expected = (now.getHours() - 1) % 24;
       expect(addHours(now, -1).getHours()).toBe(9);
     });
 
