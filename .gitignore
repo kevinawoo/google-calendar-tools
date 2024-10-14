@@ -19,3 +19,4 @@ README.md.orig.*
 # user settings
 config.ts
 .clasp.json
+.env

@@ -120,6 +120,8 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
     ```
    If you run into problems with permissions with `clasp login` because of org policies,
    you can copy the `dist/bundle.js` directly into the Google App Script editor.
+   
+   Tip: add `.env` with `open "https://urlToScript"` to open the script in the browser.
 
 5. Setup a project trigger
     1. setup a time based trigger on the 
