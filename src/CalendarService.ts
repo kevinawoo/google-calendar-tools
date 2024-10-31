@@ -12,25 +12,26 @@ interface TargetDescription {
 type ISycnedEvents = Record<string, CalendarEvent[]>;
 
 export class CalendarService {
-  static cleanup(calID = Config.EndingSoonEvents.EndNotifCalID, titleMatcher = /Ending Soon/): void {
+  static cleanup(calID = Config.Cleanup.CalID, titleMatcher = Config.Cleanup.Regex || /Ending Soon/): void {
     if (!calID) {
       Logger.log('No calendar ID provided for title: ' + titleMatcher);
       return;
     }
 
-    const primaryCal = CalendarApp.getCalendarById(calID);
+    const cal = CalendarApp.getCalendarById(calID);
 
     const today = new Date();
     today.setDate(today.getDate() - 1);
     const endDate = new Date();
-    endDate.setDate(today.getDate() + 14); // how many days in advance to monitor and block off time
+    endDate.setDate(today.getDate() + Config.Cleanup.Days); // how many days in advance to monitor and block off time
 
-    const primaryEvents = primaryCal.getEvents(today, endDate); // all primary calendar events
+    const primaryEvents = cal.getEvents(today, endDate); // all calendar events
 
-    for (const primaryEvent of primaryEvents) {
-      const match = primaryEvent.getTitle().match(titleMatcher);
+    for (const event of primaryEvents) {
+      const match = event.getTitle().match(titleMatcher);
       if (match && match.length) {
-        primaryEvent.deleteEvent();
+        Logger.log(`deleting event: ${event.getTitle()} at ${event.getStartTime()} - ${event.getEndTime()}, desc: ${event.getDescription()}`);
+        event.deleteEvent();
       }
     }
   }
