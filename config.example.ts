@@ -4,6 +4,8 @@ export const config: ConfigType = {
       Enabled: true,
       FromCalId: 'person.email@gmail.com',
       ToCalId: 'work.email@my-company.com',
+      Days: 14, // default
+
       TitlePlaceholder: 'Busy', // XOR CopyEventTitle: true
       WorkDayStartHour: 8, // 8am
       WorkDayEndHour: 24, // midnight

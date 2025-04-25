@@ -21,6 +21,11 @@ type BaseBlockCalendar = {
   FromCalId: string;
   ToCalId: string;
 
+  // Days defaults to 14
+  // Note that this extends the execution time, which you might run into Google App limits
+  // ... set higher with caution
+  Days: number;
+
   WorkDayStartHour: number;
   WorkDayEndHour: number;
   SkipWeekends?: boolean;

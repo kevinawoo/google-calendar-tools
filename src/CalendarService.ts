@@ -230,7 +230,7 @@ export class CalendarService {
 
     const today = new Date();
     const endDate = new Date();
-    endDate.setDate(today.getDate() + 14); // how many days in advance to monitor and block off time
+    endDate.setDate(today.getDate() + config.Days); // how many days in advance to monitor and block off time
 
     const fromCal = CalendarApp.getCalendarById(config.FromCalId);
     const fromEvents = fromCal.getEvents(today, endDate);
@@ -307,12 +307,18 @@ export class CalendarService {
       const day = fromEvent.getStartTime().getDay();
       const timeHour = fromEvent.getStartTime().getHours();
 
-      if (config.SkipWeekends && (day === 6 || day === 0)) {
+      if (config.SkipWeekends || (!config.SkipWeekends && (day === 6 || day === 0))) {
         Logger.log(`skipping event for "${fromEvent.getTitle()}", it's on a weekend. Day: ${day}`);
         continue;
       } else if (timeHour < config.WorkDayStartHour || config.WorkDayEndHour <= timeHour) {
         // skip events outside of work hours
         Logger.log(`skipping event for "${fromEvent.getTitle()}", it's outside of work hours. Hour: ${timeHour}`);
+        continue;
+      }
+
+      // if it's one of our placeholder event, skip it
+      if (fromEvent.getDescription().includes('"baseEventId"')) {
+        Logger.log(`skipping event "${fromEvent.getTitle()}" because it's a mirrored event`);
         continue;
       }
 

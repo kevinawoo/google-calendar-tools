@@ -7,6 +7,7 @@ declare let global: any;
 global.cleanup = (): void => {
   for (const cfg of config.Cleanup)
     if (cfg) {
+      Logger.log(`cleaning: ${JSON.stringify(cfg)}`);
       CalendarService.cleanup(cfg);
     }
 };
