@@ -1,3 +1,17 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Google Calendar Tools](#google-calendar-tools)
+- [Tools](#tools)
+  - [sync](#sync)
+  - [createEndingSoonEvents](#createendingsoonevents)
+  - [createWalkEvent](#createwalkevent)
+  - [cleanup](#cleanup)
+- [Setup and Deploy](#setup-and-deploy)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Google Calendar Tools
 This repo contains a series of calendar tools that have helped manage my calendar.
 
