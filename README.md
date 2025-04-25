@@ -2,24 +2,33 @@
 This repo contains a series of calendar tools that have helped manage my calendar.
 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
+# Tools
 
-- [Tools/Methods](#toolsmethods)
-  - [createEndingSoonEvents](#createendingsoonevents)
-  - [blockWorkCalWithPersonEventPlaceholders](#blockworkcalwithpersoneventplaceholders)
-  - [createWalkEvent](#createwalkevent)
-  - [cleanup](#cleanup)
-- [Setup and Deploy](#setup-and-deploy)
+## sync
+Double Booked all the time because of a personal event that didn't show up on your work calendar??
+It's a pain to share a personal event with your work calendar for each event by hand.  
+It's also a pain to manually block out time on your work calendar for those events.
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+This script will look at your `from` calendar, and create `Busy` events on your `to` calendar at the same time.
+
+It respects the transparency status of `Available`/`Free`.
+
+It also respects your response on the event (if you're going or not).
 
 
-# Tools/Methods
+> Example: this created a `Busy` event for my other event `"fromCal" event (busy)`
+>
+> <kbd>![](.github/assets/blocked.png)</kbd>
+
+These are private events so no one calendar stalking you can see the title/details, to take it one step further, the placeholder event's title is just `Busy` (configurable).
+
+The only identifying information is the `eventID`, which I believe is randomly generated when creating a Calendar Event.
+I don't believe this leaks any information unless your calendar is shared or public. At that point, someone maybe able to find the event. Buuuut... your calendar is already public 🤔, so 🤷‍♂️.
+
+
 
 ## createEndingSoonEvents
-This is useful to get a notification that a calendar event is ending soon.
+This is useful to get a notification that an event is ending soon.
 
 > Example: this created a `Ending Soon: Busy` at `20:45pm - 20:45pm` for the `Busy` event from `20:30pm - 20:45pm`
 > 
@@ -33,23 +42,6 @@ Setup:
 - You'll need to create a calendar, I called mines `ending-soon-cal`, and provide the calendar ID in the configurations. 
 - Don't forget to set up the reminders!
 - I have a calendar default reminder to go off at 5m and 0m prior to the event.
-
-
-## blockWorkCalWithPersonEventPlaceholders
-Double Booked all the time because of a personal event that didn't show up on your work calendar?? 
-It's a pain to share a personal event with your work calendar for each event. 
-It's also a pain to manually block out time on your work calendar for those events.
-
-This script will look at your personal calendar, and create `Busy` events on your work calendar at the same time as your personal event. 
-
-> Example: this created a `Busy` event for my personal event `moooooooo`
->
-> <kbd>![](.github/assets/ending_soon_and_blocked.png)</kbd>
-
-These are private events so no one calendar stalking you can see the title/details, to take it one step further, the placeholder event's title is just `Busy` (configurable). 
-
-The only identifying information is the `eventID`, which I believe is randomly generated when creating a Calendar Event. 
-I don't believe this leaks any information unless your calendar is shared or public. At that point, someone maybe able to find the event. Buuuut... your calendar is already public 🤔, so 🤷‍♂️. 
 
 
 ## createWalkEvent
@@ -102,7 +94,6 @@ It's useful to blast away the events created by the `createEndingSoonEvents` or 
    
    Tip: add `.env` with `open "https://urlToScript"` to open the script in the browser.
 
-5. Setup a project trigger
-    1. setup a time based trigger on the 
-    - `sync` function: every `30 minutes`
-    - `createWalkEvent` function: `weekly every Monday 9-10am`
+5. Set up project triggers for the tools you want running: 
+   - setup a time based trigger on `sync` function: every `30 minutes`
+   - setup a time based trigger on `createWalkEvent` function: `weekly every Monday 9-10am`

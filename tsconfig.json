@@ -6,7 +6,8 @@
     "moduleResolution": "Node"
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "src/ConfigType.d.ts"
   ],
   "exclude": [
     "node_modules"

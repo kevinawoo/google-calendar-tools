@@ -28,3 +28,9 @@ export const GoogleCalendarVisibility = {
   PRIVATE: 'PRIVATE',
   PUBLIC: 'PUBLIC'
 };
+
+// todo: this should be an enum
+export const EventTransparency = {
+  OPAQUE: 'OPAQUE', // "busy"
+  TRANSPARENT: 'TRANSPARENT' // "Available"
+};

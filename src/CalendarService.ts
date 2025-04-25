@@ -2,8 +2,8 @@ import CalendarEvent = GoogleAppsScript.Calendar.CalendarEvent;
 import { getSunset } from 'sunrise-sunset-js';
 
 import { addDays, addHours, addMinutes, getHHMM } from './util';
-import { Config } from '../config';
-import { GoogleCalendarColors, GoogleCalendarGuestStatus } from './GoogleCalendarEnums';
+import { config } from '../config';
+import { EventTransparency, GoogleCalendarColors, GoogleCalendarGuestStatus } from './GoogleCalendarEnums';
 
 interface TargetDescription {
   baseEventId: string;
@@ -12,23 +12,23 @@ interface TargetDescription {
 type ISycnedEvents = Record<string, CalendarEvent[]>;
 
 export class CalendarService {
-  static cleanup(calID = Config.Cleanup.CalID, titleMatcher = Config.Cleanup.Regex || /Ending Soon/): void {
-    if (!calID) {
-      Logger.log('No calendar ID provided for title: ' + titleMatcher);
+  static cleanup(config: Cleanup): void {
+    if (!config.CalID) {
+      Logger.log('No calendar ID provided');
       return;
     }
 
-    const cal = CalendarApp.getCalendarById(calID);
+    const cal = CalendarApp.getCalendarById(config.CalID);
 
     const today = new Date();
     today.setDate(today.getDate() - 1);
     const endDate = new Date();
-    endDate.setDate(today.getDate() + Config.Cleanup.Days); // how many days in advance to monitor and block off time
+    endDate.setDate(today.getDate() + config.Days || 30);
 
     const primaryEvents = cal.getEvents(today, endDate); // all calendar events
 
     for (const event of primaryEvents) {
-      const match = event.getTitle().match(titleMatcher);
+      const match = event.getTitle().match(config.Regex);
       if (match && match.length) {
         Logger.log(`deleting event: ${event.getTitle()} at ${event.getStartTime()} - ${event.getEndTime()}, desc: ${event.getDescription()}`);
         event.deleteEvent();
@@ -37,18 +37,18 @@ export class CalendarService {
   }
 
   static createEndingSoonEvents(): void {
-    if (!Config.EndingSoonEvents.Enabled) {
+    if (!config.EndingSoonEvents.Enabled) {
       return;
     }
 
     const today = new Date();
     const endDate = new Date();
-    endDate.setDate(today.getDate() + Config.EndingSoonEvents.LookAheadDays); // how many days in advance to monitor and block off time
+    endDate.setDate(today.getDate() + config.EndingSoonEvents.LookAheadDays); // how many days in advance to monitor and block off time
 
-    const baseCal = CalendarApp.getCalendarById(Config.EndingSoonEvents.PrimaryCalID);
+    const baseCal = CalendarApp.getCalendarById(config.EndingSoonEvents.PrimaryCalID);
     const baseCalEvents = baseCal.getEvents(today, endDate); // all primary calendar events
 
-    const endingSoonCal = CalendarApp.getCalendarById(Config.EndingSoonEvents.EndNotifCalID);
+    const endingSoonCal = CalendarApp.getCalendarById(config.EndingSoonEvents.EndNotifCalID);
     const endingSoonCalEvents = endingSoonCal.getEvents(today, endDate);
 
     const syncedEvents: ISycnedEvents = {}; // to contain primary calendar events that were previously created from secondary calendar
@@ -122,7 +122,9 @@ export class CalendarService {
       // event must not exists, let's go ahead and create it in the targetCal
       const newEvent = endingSoonCal.createEvent(expectedTitle, baseEvent.getEndTime(), baseEvent.getEndTime());
 
-      const descJSON: TargetDescription = { baseEventId: baseEvent.getId() };
+      const descJSON: TargetDescription = {
+        baseEventId: baseEvent.getId()
+      };
       newEvent.setDescription(JSON.stringify(descJSON));
 
       // newEvent.setVisibility(CalendarApp.Visibility.PRIVATE); // set blocked time as private appointments in work calendar
@@ -155,19 +157,20 @@ export class CalendarService {
 
     let declined = false;
 
+    // TODO: the enums aren't working, so use strings to compare
     const myStatus = `${event.getMyStatus()}`;
-    if (myStatus === GoogleCalendarGuestStatus.NO) {
+
+    if (myStatus == GoogleCalendarGuestStatus.NO) {
       declined = true;
     }
 
     // note, if I own the event, i'll need to check the guest list to see if I declined it myself or not
-    // seems like it doesn't work, but i'll keep it here anyways 🤷
-    if (myStatus === GoogleCalendarGuestStatus.OWNER) {
+    if (myStatus == GoogleCalendarGuestStatus.OWNER) {
       const guestList = event.getGuestList();
       if (guestList && guestList.length) {
         for (const g of guestList) {
           Logger.log(`checking for declined (in guest list): ${event.getTitle()}: ${g.getEmail()} is '${g.getGuestStatus()}'`);
-          if (g.getEmail() == Config.EndingSoonEvents.PrimaryCalID && `${g.getGuestStatus()}` === GoogleCalendarGuestStatus.NO) {
+          if (g.getEmail() == config.EndingSoonEvents.PrimaryCalID && `${g.getGuestStatus()}` === GoogleCalendarGuestStatus.NO) {
             declined = true;
             break;
           }
@@ -185,16 +188,21 @@ export class CalendarService {
   }
 
   static createWalkEvent(): void {
-    if (!Config.SunsetWalkEvents.Enabled) {
+    if (!config.SunsetWalkEvents.Enabled) {
       return;
     }
 
-    this.cleanup(Config.EndingSoonEvents.PrimaryCalID, /Sunset Walk. Sunset.*/);
+    this.cleanup({
+      CalID: config.EndingSoonEvents.PrimaryCalID,
+      Regex: /Sunset Walk. Sunset.*/,
+      Enabled: true,
+      Days: config.SunsetWalkEvents.DaysToCreate * 2
+    });
 
-    const cal = CalendarApp.getCalendarById(Config.EndingSoonEvents.PrimaryCalID);
+    const cal = CalendarApp.getCalendarById(config.EndingSoonEvents.PrimaryCalID);
 
-    for (let i = 1; i <= Config.SunsetWalkEvents.DaysToCreate; i++) {
-      const todaySunset = getSunset(Config.SunsetWalkEvents.Latitude, Config.SunsetWalkEvents.Longitude, addDays(new Date(), i));
+    for (let i = 1; i <= config.SunsetWalkEvents.DaysToCreate; i++) {
+      const todaySunset = getSunset(config.SunsetWalkEvents.Latitude, config.SunsetWalkEvents.Longitude, addDays(new Date(), i));
       Logger.log(`sunset is at ${todaySunset}`);
 
       const event = cal.createEvent(`[placeholder] Sunset Walk. Sunset@${getHHMM(todaySunset)}`, addHours(todaySunset, -1), addMinutes(todaySunset, 15), {
@@ -207,104 +215,132 @@ export class CalendarService {
     }
   }
 
-  static blockWorkCalWithPersonEventPlaceholders(): void {
-    if (!Config.BlockWorkCalWithPersonEventPlaceholders.Enabled) {
-      return;
+  static blockCals(): void {
+    for (const blockCal of config.BlockCalendars) {
+      if (blockCal.Enabled) {
+        this.blockCal(blockCal);
+      }
     }
+  }
 
-    const workEventPlaceholderTitle = Config.BlockWorkCalWithPersonEventPlaceholders.WorkEventPlaceholderTitle || 'Busy'; // update this to the text you'd like to appear in the new events created in primary calendar
+  static blockCal(config: BlockCalWithPlaceHolderType | BlockCalWithFromTitle): void {
+    Logger.log(`syncing ${config.FromCalId} to ${config.ToCalId}`);
+
+    const workEventPlaceholderTitle = config.TitlePlaceholder || 'Busy';
 
     const today = new Date();
     const endDate = new Date();
     endDate.setDate(today.getDate() + 14); // how many days in advance to monitor and block off time
 
-    const personalCal = CalendarApp.getCalendarById(Config.BlockWorkCalWithPersonEventPlaceholders.PersonalCalID);
-    const personalCalEvents = personalCal.getEvents(today, endDate);
-    Logger.log('Number of personalEvents: ' + personalCalEvents.length);
+    const fromCal = CalendarApp.getCalendarById(config.FromCalId);
+    const fromEvents = fromCal.getEvents(today, endDate);
+    Logger.log('Number of From Events: ' + fromEvents.length);
 
-    const workCal = CalendarApp.getCalendarById(Config.BlockWorkCalWithPersonEventPlaceholders.WorkCalID);
-    const workCalEvents = workCal.getEvents(today, endDate);
-    Logger.log('Number of workEvents: ' + workCalEvents.length);
+    const toCal = CalendarApp.getCalendarById(config.ToCalId);
+    const ToEvents = toCal.getEvents(today, endDate);
+    Logger.log('Number of To events: ' + ToEvents.length);
 
-    const syncedWorkEventsByPersonalEventId: ISycnedEvents = {};
+    const syncedEventsById: ISycnedEvents = {};
 
-    // create a list of events we've already synced before
-    for (const event of workCalEvents) {
-      if (event.getTitle() === workEventPlaceholderTitle) {
+    // find all events we synced previously
+    for (const event of ToEvents) {
+      if (event.getDescription().match(/"baseEventId"/)) {
         try {
-          const personalDesc: TargetDescription = JSON.parse(event.getDescription());
-          syncedWorkEventsByPersonalEventId[personalDesc.baseEventId] = syncedWorkEventsByPersonalEventId[personalDesc.baseEventId] || []; // make sure the array is created
-          syncedWorkEventsByPersonalEventId[personalDesc.baseEventId].push(event);
+          const desc: TargetDescription = JSON.parse(event.getDescription());
+          syncedEventsById[desc.baseEventId] = syncedEventsById[desc.baseEventId] || []; // make sure the array is created
+          syncedEventsById[desc.baseEventId].push(event);
         } catch {
           // ignored, prob not actually an event created by us
         }
       }
     }
 
-    // process all events in secondary calendar
-    for (const personalEvent of personalCalEvents) {
-      const personalEventId = personalEvent.getId();
+    // process all events in From calendar
+    for (const fromEvent of fromEvents) {
+      const fromId = fromEvent.getId();
 
-      // if the personalEvent has a different time, then we should update the time
-      if (syncedWorkEventsByPersonalEventId[personalEventId]) {
-        const foundWorkEvents = syncedWorkEventsByPersonalEventId[personalEventId];
+      // if the fromEvent has a different time, then we should update the time
+      if (syncedEventsById[fromId]) {
+        const newStartTime = fromEvent.getStartTime();
+        const newEndTime = fromEvent.getEndTime();
 
-        let matched = false;
-        const pStartTime = personalEvent.getStartTime();
-        const pEndTime = personalEvent.getEndTime();
+        let timeMatch = false;
+        const found = syncedEventsById[fromId];
 
-        for (let i = 0; i < foundWorkEvents.length; i++) {
-          const w = foundWorkEvents[i];
-          if (w.getStartTime().getTime() === pStartTime.getTime() && w.getEndTime().getTime() === pEndTime.getTime()) {
-            foundWorkEvents.splice(i, 1); // remove it from the array
-            matched = true;
+        for (let i = 0; i < found.length; i++) {
+          const w = found[i];
+          if (w.getStartTime().getTime() === newStartTime.getTime() && w.getEndTime().getTime() === newEndTime.getTime()) {
+            found.splice(i, 1); // remove it from the array
+            timeMatch = true;
             break;
           }
         }
 
-        if (this.hasDeclined(personalEvent)) {
-          Logger.log(`ignoring event for "${personalEvent.getTitle()}", it's cancelled.`);
-          continue;
-        }
-
-        if (matched) {
-          Logger.log(`ignoring event for "${personalEvent.getTitle()}", already exists at the right time: ${pStartTime} - ${pEndTime}`);
+        if (timeMatch) {
+          Logger.log(`ignoring event for "${fromEvent.getTitle()}", already exists at the right time: ${newStartTime} - ${newEndTime}`);
           continue;
         }
       }
 
-      if (personalEvent.isAllDayEvent()) {
+      // somehow the enum isn't working... so just convert it to a string and compare
+      if (fromEvent.getTransparency() == EventTransparency.TRANSPARENT) {
+        Logger.log(`ignoring event for "${fromEvent.getTitle()}", it's transparent`);
+        continue;
+      }
+
+      if (this.hasDeclined(fromEvent)) {
+        Logger.log(`ignoring event for "${fromEvent.getTitle()}", it's cancelled.`);
+        continue;
+      }
+
+      if (fromEvent.isAllDayEvent()) {
         continue; // Do nothing if the event is an all-day or multi-day event. This script only syncs hour-based events
       }
 
-      // if the secondary event does not exist in the primary calendar, create it, skipping weekends
-      const day = personalEvent.getStartTime().getDay();
-      const timeHour = personalEvent.getStartTime().getHours();
-
-      if (day === 6 || day === 0) {
-        // skip weekends
-        Logger.log(`skipping event for "${personalEvent.getTitle()}", it's on a weekend. Day: ${day}`);
-        continue;
-      } else if (timeHour < Config.BlockWorkCalWithPersonEventPlaceholders.WorkDayStartHour || timeHour >= Config.BlockWorkCalWithPersonEventPlaceholders.WorkDayEndHour) {
-        // skip events outside of work hours
-        Logger.log(`skipping event for "${personalEvent.getTitle()}", it's outside of work hours. Hour: ${timeHour}`);
+      // ignore events that have the To cal invited
+      if (fromEvent.getGuestList().filter((guest) => guest.getEmail() === config.ToCalId).length > 0) {
+        Logger.log(`ignoring event for "${fromEvent.getTitle()}", it's already invited.`);
         continue;
       }
 
-      const newEvent = workCal.createEvent(workEventPlaceholderTitle, personalEvent.getStartTime(), personalEvent.getEndTime());
-      const desc: TargetDescription = { baseEventId: personalEventId };
+      // if the To event does not exist in the From calendar, create it
+      const day = fromEvent.getStartTime().getDay();
+      const timeHour = fromEvent.getStartTime().getHours();
+
+      if (config.SkipWeekends && (day === 6 || day === 0)) {
+        Logger.log(`skipping event for "${fromEvent.getTitle()}", it's on a weekend. Day: ${day}`);
+        continue;
+      } else if (timeHour < config.WorkDayStartHour || config.WorkDayEndHour <= timeHour) {
+        // skip events outside of work hours
+        Logger.log(`skipping event for "${fromEvent.getTitle()}", it's outside of work hours. Hour: ${timeHour}`);
+        continue;
+      }
+
+      let title = workEventPlaceholderTitle;
+      if (config.CopyEventTitle) {
+        title = fromEvent.getTitle();
+      }
+
+      const newEvent = toCal.createEvent(title, fromEvent.getStartTime(), fromEvent.getEndTime());
+      const desc: TargetDescription = {
+        baseEventId: fromId
+      };
       newEvent.setDescription(JSON.stringify(desc));
       newEvent.setVisibility(CalendarApp.Visibility.PRIVATE);
       newEvent.removeAllReminders();
-      Logger.log(`created new blocking event for "${personalEvent.getTitle()}": ${newEvent.getId()} ${newEvent.getTitle()} @ ${newEvent.getStartTime()} - ${newEvent.getEndTime()}`);
+      Logger.log(`created new blocking event for "${fromEvent.getTitle()}": ${newEvent.getId()} ${newEvent.getTitle()} @ ${newEvent.getStartTime()} - ${newEvent.getEndTime()}`);
     }
 
-    // if a primary event previously created no longer exists in the secondary calendar, delete it
-    for (const workEvents of Object.values(syncedWorkEventsByPersonalEventId)) {
-      for (const workEvent of workEvents) {
-        const personalId = JSON.parse(workEvent.getDescription()).baseEventId;
-        Logger.log(`deleting work event that matches "${personalCal.getEventById(personalId).getTitle()}": ${workEvent.getId()} ${workEvent.getTitle()} @ ${workEvent.getStartTime()} - ${workEvent.getEndTime()}`);
-        workEvent.deleteEvent();
+    // if a To event previously created no longer exists in the secondary calendar, delete it
+    for (const events of Object.values(syncedEventsById)) {
+      for (const event of events) {
+        const toEventId = JSON.parse(event.getDescription()).baseEventId;
+        Logger.log(`deleting work event that matches "${fromCal.getEventById(toEventId).getTitle()}": ${event.getId()} ${event.getTitle()} @ ${event.getStartTime()} - ${event.getEndTime()}`);
+        try {
+          event.deleteEvent();
+        } catch (e) {
+          Logger.log(`error deleting event: ${e}`);
+        }
       }
     }
   }
