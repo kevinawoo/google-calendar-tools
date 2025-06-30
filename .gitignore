@@ -11,12 +11,14 @@ node_modules/
 # Editor
 .idea/
 
-# Build directory
+# Build stuff
 dist/
 README.md.toc.*
 README.md.orig.*
+src/*.map
+src/*.js
 
 # user settings
-config.ts
+config.*
 .clasp.json
 .env
