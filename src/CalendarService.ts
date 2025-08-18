@@ -334,6 +334,9 @@ export class CalendarService {
       newEvent.setDescription(JSON.stringify(desc));
       newEvent.setVisibility(CalendarApp.Visibility.PRIVATE);
       newEvent.removeAllReminders();
+      if (config.SyncLocationField) {
+        newEvent.setLocation(fromEvent.getLocation());
+      }
       Logger.log(`created new blocking event for "${fromEvent.getTitle()}": ${newEvent.getId()} ${newEvent.getTitle()} @ ${newEvent.getStartTime()} - ${newEvent.getEndTime()}`);
     }
 

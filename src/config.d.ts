@@ -29,6 +29,7 @@ type BaseBlockCalendar = {
   WorkDayStartHour: number;
   WorkDayEndHour: number;
   SkipWeekends?: boolean;
+  SyncLocationField?: boolean;
 };
 
 type BlockCalWithPlaceHolderType = BaseBlockCalendar & {
