@@ -341,14 +341,17 @@ export class CalendarService {
     }
 
     // if a To event previously created no longer exists in the secondary calendar, delete it
-    for (const events of Object.values(syncedEventsById)) {
-      for (const event of events) {
-        const toEventId = JSON.parse(event.getDescription()).baseEventId;
-        Logger.log(`deleting work event that matches "${fromCal.getEventById(toEventId).getTitle()}": ${event.getId()} ${event.getTitle()} @ ${event.getStartTime()} - ${event.getEndTime()}`);
+    for (const toCalEvents of Object.values(syncedEventsById)) {
+      for (const toCalEvent of toCalEvents) {
         try {
-          event.deleteEvent();
+          const fromCalEventId = JSON.parse(toCalEvent.getDescription()).baseEventId;
+          if (!fromCal.getEventById(fromCalEventId)) {
+            // aka it's been deleted from the fromCal
+            Logger.log(`ToCal cleanup: deleting ${toCalEvent.getTitle()} at ${toCalEvent.getStartTime()} - ${toCalEvent.getEndTime()}`);
+            toCalEvent.deleteEvent();
+          }
         } catch (e) {
-          Logger.log(`error deleting event: ${e}`);
+          Logger.log(`error deleting event ${toCalEvent.getTitle()} at ${toCalEvent.getStartTime()}: ${e}`);
         }
       }
     }
